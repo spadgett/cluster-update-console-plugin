@@ -170,7 +170,7 @@ export default function ClusterUpdatesTab({ clusterVersion }: ClusterUpdatesTabP
       </div>
 
       {/* Additional cluster details - outside bordered container */}
-      <DescriptionList className="pf-v6-u-mt-lg pf-v6-u-ml-lg">
+      <DescriptionList className="pf-v6-u-mt-lg">
         {clusterID && (
           <DescriptionListGroup>
             <DescriptionListTerm>{t('Cluster ID')}</DescriptionListTerm>
