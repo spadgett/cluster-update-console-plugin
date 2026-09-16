@@ -168,43 +168,39 @@ export default function ClusterUpdatesTab({ clusterVersion }: ClusterUpdatesTabP
       </div>
 
       {/* Additional cluster details */}
-      <div className="cluster-update-plugin__settings__row pf-v6-u-mt-lg">
-        <div className="cluster-update-plugin__settings__section" style={{ flex: '1 1 100%' }}>
-          <DescriptionList className="cluster-update-plugin__settings__details">
-            {clusterID && (
-              <DescriptionListGroup>
-                <DescriptionListTerm>{t('Cluster ID')}</DescriptionListTerm>
-                <DescriptionListDescription className="cluster-update-plugin__select-to-copy pf-v6-u-text-break-word">
-                  {clusterID}
-                </DescriptionListDescription>
-              </DescriptionListGroup>
-            )}
-            {desiredImage && (
-              <DescriptionListGroup>
-                <DescriptionListTerm>{t('Desired release image')}</DescriptionListTerm>
-                <DescriptionListDescription className="cluster-update-plugin__select-to-copy pf-v6-u-text-break-word">
-                  {imageParts.length === 2 ? (
-                    <>
-                      <span className="pf-v6-u-color-200">{imageParts[0]}@</span>
-                      {imageParts[1]}
-                    </>
-                  ) : (
-                    desiredImage
-                  )}
-                </DescriptionListDescription>
-              </DescriptionListGroup>
-            )}
-            {upstreamURL && (
-              <DescriptionListGroup>
-                <DescriptionListTerm>{t('Upstream configuration')}</DescriptionListTerm>
-                <DescriptionListDescription className="pf-v6-u-text-break-word">
-                  {upstreamURL}
-                </DescriptionListDescription>
-              </DescriptionListGroup>
-            )}
-          </DescriptionList>
-        </div>
-      </div>
+      <DescriptionList className="pf-v6-u-mt-lg pf-v6-u-ml-lg">
+        {clusterID && (
+          <DescriptionListGroup>
+            <DescriptionListTerm>{t('Cluster ID')}</DescriptionListTerm>
+            <DescriptionListDescription className="cluster-update-plugin__select-to-copy pf-v6-u-text-break-word">
+              {clusterID}
+            </DescriptionListDescription>
+          </DescriptionListGroup>
+        )}
+        {desiredImage && (
+          <DescriptionListGroup>
+            <DescriptionListTerm>{t('Desired release image')}</DescriptionListTerm>
+            <DescriptionListDescription className="cluster-update-plugin__select-to-copy pf-v6-u-text-break-word">
+              {imageParts.length === 2 ? (
+                <>
+                  <span className="pf-v6-u-color-200">{imageParts[0]}@</span>
+                  {imageParts[1]}
+                </>
+              ) : (
+                desiredImage
+              )}
+            </DescriptionListDescription>
+          </DescriptionListGroup>
+        )}
+        {upstreamURL && (
+          <DescriptionListGroup>
+            <DescriptionListTerm>{t('Upstream configuration')}</DescriptionListTerm>
+            <DescriptionListDescription className="pf-v6-u-text-break-word">
+              {upstreamURL}
+            </DescriptionListDescription>
+          </DescriptionListGroup>
+        )}
+      </DescriptionList>
 
       {/* Update Modal */}
       <ClusterUpdateModal
