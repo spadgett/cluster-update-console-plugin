@@ -2,6 +2,7 @@ import * as semver from 'semver';
 import {
   K8sResourceCondition,
   K8sResourceConditionStatus,
+  k8sPatch,
 } from '@openshift-console/dynamic-plugin-sdk';
 import {
   ClusterVersion,
@@ -11,6 +12,7 @@ import {
   Release,
   UpdateHistory,
 } from '../models/clusterversion';
+import { MachineConfigPool, MachineConfigPoolModel } from '../models/machineconfigpool';
 
 export enum ClusterUpdateStatus {
   UpToDate = 'Up to Date',
@@ -269,3 +271,16 @@ export const getConditionUpgradeableFalse = (
 
 export const clusterIsUpToDateOrUpdateAvailable = (status: ClusterUpdateStatus): boolean =>
   status === ClusterUpdateStatus.UpToDate || status === ClusterUpdateStatus.UpdatesAvailable;
+
+export const getMCPsToPausePromises = (
+  machineConfigPools: MachineConfigPool[],
+  paused: boolean,
+): Promise<MachineConfigPool>[] =>
+  machineConfigPools.map((mcp) => {
+    const patch = [{ op: 'add', path: '/spec/paused', value: paused }];
+    return k8sPatch({
+      model: MachineConfigPoolModel,
+      resource: mcp,
+      data: patch,
+    });
+  });

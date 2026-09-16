@@ -26,6 +26,7 @@ import {
 import { useMachineConfigPools } from '../../hooks/useMachineConfigPools';
 import { UpdatesGraph } from './UpdatesGraph';
 import { UpdateStatus } from './UpdateStatus';
+import { UpdateInProgress } from './UpdateInProgress';
 import {
   CurrentVersion,
   CurrentVersionHeader,
@@ -41,7 +42,7 @@ type ClusterUpdatesTabProps = {
 
 export default function ClusterUpdatesTab({ clusterVersion }: ClusterUpdatesTabProps) {
   const { t } = useTranslation(I18N_NAMESPACE);
-  const [, mcpsLoaded] = useMachineConfigPools();
+  const [mcps, mcpsLoaded] = useMachineConfigPools();
   const [isUpdateModalOpen, setIsUpdateModalOpen] = React.useState(false);
   const [isMoreUpdatesModalOpen, setIsMoreUpdatesModalOpen] = React.useState(false);
 
@@ -156,6 +157,12 @@ export default function ClusterUpdatesTab({ clusterVersion }: ClusterUpdatesTabP
                 />
               )}
             </>
+          )}
+
+          {/* Update progress */}
+          {(updateStatus === ClusterUpdateStatus.Updating ||
+            updateStatus === ClusterUpdateStatus.UpdatingAndFailing) && (
+            <UpdateInProgress clusterVersion={clusterVersion} machineConfigPools={mcps} />
           )}
         </div>
       </div>

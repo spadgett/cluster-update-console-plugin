@@ -31,6 +31,7 @@ import {
   getConditionUpgradeableFalse,
   isMinorVersionNewer,
   getNotRecommendedUpdateCondition,
+  getMCPsToPausePromises,
 } from '../../utils/cluster-updates';
 
 type ClusterUpdateModalProps = {
@@ -53,6 +54,7 @@ export const ClusterUpdateModal: React.FC<ClusterUpdateModalProps> = ({
   const [desiredVersion, setDesiredVersion] = React.useState('');
   const [upgradeType, setUpgradeType] = React.useState<UpgradeTypes>(UpgradeTypes.Full);
   const [includeNotRecommended, setIncludeNotRecommended] = React.useState(false);
+  const [machineConfigPoolsToPause, setMachineConfigPoolsToPause] = React.useState<string[]>([]);
   const [inProgress, setInProgress] = React.useState(false);
   const [error, setError] = React.useState('');
 
@@ -83,6 +85,15 @@ export const ClusterUpdateModal: React.FC<ClusterUpdateModalProps> = ({
     currentMinorVersionPatchUpdate,
     desiredVersion,
   ]);
+
+  React.useEffect(() => {
+    // Initialize with currently paused MCPs
+    const initialMCPPausedValues = mcps
+      .filter((mcp) => !isMCPMaster(mcp) && isMCPPaused(mcp))
+      .map((mcp) => mcp.metadata?.name || '')
+      .filter((name) => name !== '');
+    setMachineConfigPoolsToPause(initialMCPPausedValues);
+  }, []); // Only run once on mount
 
   const pauseableMCPs = mcpsLoaded
     ? mcps.filter((mcp) => !isMCPMaster(mcp)).sort(sortMCPsByCreationTimestamp)
@@ -117,7 +128,23 @@ export const ClusterUpdateModal: React.FC<ClusterUpdateModalProps> = ({
     setInProgress(true);
 
     try {
-      // For now, just patch the ClusterVersion - we'll add MCP pausing later
+      let MCPsToPausePromises: Promise<any>[] = [];
+      let MCPsToResumePromises: Promise<any>[] = [];
+
+      if (upgradeType === UpgradeTypes.Full) {
+        // Full update: resume all paused MCPs
+        MCPsToPausePromises = [];
+        MCPsToResumePromises = getMCPsToPausePromises(pausedMCPs, false);
+      } else {
+        // Partial update: pause selected MCPs, resume others
+        const MCPsToPause = pauseableMCPs.filter((mcp) =>
+          machineConfigPoolsToPause.find((m) => m === mcp.metadata?.name),
+        );
+        const MCPsToResume = pauseableMCPs.filter((mcp) => !MCPsToPause.includes(mcp));
+        MCPsToPausePromises = getMCPsToPausePromises(MCPsToPause, true);
+        MCPsToResumePromises = getMCPsToPausePromises(MCPsToResume, false);
+      }
+
       const patch = [
         {
           op: 'add',
@@ -128,11 +155,16 @@ export const ClusterUpdateModal: React.FC<ClusterUpdateModalProps> = ({
         },
       ];
 
-      await k8sPatch({
-        model: ClusterVersionModel,
-        resource: clusterVersion,
-        data: patch,
-      });
+      // Patch ClusterVersion and MCPs in parallel
+      await Promise.all([
+        k8sPatch({
+          model: ClusterVersionModel,
+          resource: clusterVersion,
+          data: patch,
+        }),
+        ...MCPsToResumePromises,
+        ...MCPsToPausePromises,
+      ]);
 
       onClose();
     } catch (err) {

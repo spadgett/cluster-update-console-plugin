@@ -24,7 +24,8 @@
       "name": "%plugin__cluster-update-console-plugin~Cluster Update%",
       "href": "/administration/cluster-update",
       "perspective": "admin",
-      "section": "administration"
+      "section": "administration",
+      "insertBefore": "clustersettings"
     }
   }
 ]
