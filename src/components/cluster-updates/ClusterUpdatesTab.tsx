@@ -9,6 +9,7 @@ import {
   DescriptionListTerm,
   Spinner,
 } from '@patternfly/react-core';
+import { PencilAltIcon } from '@patternfly/react-icons';
 import { useAccessReview } from '@openshift-console/dynamic-plugin-sdk';
 import { ClusterVersion } from '../../models/clusterversion';
 import { MachineConfigPoolModel, NodeTypes } from '../../models/machineconfigpool';
@@ -34,6 +35,8 @@ import {
 } from './SupportingComponents';
 import { ClusterUpdateModal } from '../modals/ClusterUpdateModal';
 import { ClusterMoreUpdatesModal } from '../modals/ClusterMoreUpdatesModal';
+import { ClusterChannelModal } from '../modals/ClusterChannelModal';
+import { ConfigureUpstreamModal } from '../modals/ConfigureUpstreamModal';
 import './cluster-updates.css';
 
 type ClusterUpdatesTabProps = {
@@ -45,6 +48,8 @@ export default function ClusterUpdatesTab({ clusterVersion }: ClusterUpdatesTabP
   const [mcps, mcpsLoaded] = useMachineConfigPools();
   const [isUpdateModalOpen, setIsUpdateModalOpen] = React.useState(false);
   const [isMoreUpdatesModalOpen, setIsMoreUpdatesModalOpen] = React.useState(false);
+  const [isChannelModalOpen, setIsChannelModalOpen] = React.useState(false);
+  const [isUpstreamModalOpen, setIsUpstreamModalOpen] = React.useState(false);
 
   const updateStatus = getClusterUpdateStatus(clusterVersion);
   const hasUpdates = hasAvailableUpdates(clusterVersion);
@@ -118,7 +123,11 @@ export default function ClusterUpdatesTab({ clusterVersion }: ClusterUpdatesTabP
                 <DescriptionListGroup>
                   <DescriptionListTerm>{t('Channel')}</DescriptionListTerm>
                   <DescriptionListDescription>
-                    <CurrentChannel cv={clusterVersion} canUpgrade={canUpgrade} />
+                    <CurrentChannel
+                      cv={clusterVersion}
+                      canUpgrade={canUpgrade}
+                      onEditChannel={() => setIsChannelModalOpen(true)}
+                    />
                   </DescriptionListDescription>
                 </DescriptionListGroup>
               </DescriptionList>
@@ -194,14 +203,25 @@ export default function ClusterUpdatesTab({ clusterVersion }: ClusterUpdatesTabP
             </DescriptionListDescription>
           </DescriptionListGroup>
         )}
-        {upstreamURL && (
-          <DescriptionListGroup>
-            <DescriptionListTerm>{t('Upstream configuration')}</DescriptionListTerm>
-            <DescriptionListDescription className="pf-v6-u-text-break-word">
-              {upstreamURL}
-            </DescriptionListDescription>
-          </DescriptionListGroup>
-        )}
+        <DescriptionListGroup>
+          <DescriptionListTerm>{t('Upstream configuration')}</DescriptionListTerm>
+          <DescriptionListDescription className="pf-v6-u-text-break-word">
+            {canUpgrade ? (
+              <Button
+                icon={<PencilAltIcon />}
+                iconPosition="end"
+                type="button"
+                isInline
+                onClick={() => setIsUpstreamModalOpen(true)}
+                variant="link"
+              >
+                {upstreamURL || t('Default')}
+              </Button>
+            ) : (
+              upstreamURL || t('Default')
+            )}
+          </DescriptionListDescription>
+        </DescriptionListGroup>
       </DescriptionList>
 
       {/* Update Modal */}
@@ -215,6 +235,20 @@ export default function ClusterUpdatesTab({ clusterVersion }: ClusterUpdatesTabP
       <ClusterMoreUpdatesModal
         isOpen={isMoreUpdatesModalOpen}
         onClose={() => setIsMoreUpdatesModalOpen(false)}
+        clusterVersion={clusterVersion}
+      />
+
+      {/* Channel Modal */}
+      <ClusterChannelModal
+        isOpen={isChannelModalOpen}
+        onClose={() => setIsChannelModalOpen(false)}
+        clusterVersion={clusterVersion}
+      />
+
+      {/* Upstream Configuration Modal */}
+      <ConfigureUpstreamModal
+        isOpen={isUpstreamModalOpen}
+        onClose={() => setIsUpstreamModalOpen(false)}
         clusterVersion={clusterVersion}
       />
     </>

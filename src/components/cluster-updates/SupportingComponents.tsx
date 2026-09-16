@@ -88,11 +88,11 @@ export const CurrentVersionHeader: React.FC<{ cv: ClusterVersion }> = ({ cv }) =
 export const CurrentChannel: React.FC<{
   cv: ClusterVersion;
   canUpgrade: boolean;
-  onEditChannel?: () => void;
+  onEditChannel: () => void;
 }> = ({ cv, canUpgrade, onEditChannel }) => {
   const { t } = useTranslation(I18N_NAMESPACE);
   const label = cv.spec?.channel || t('Not configured');
-  return canUpgrade && onEditChannel ? (
+  return canUpgrade ? (
     <Button
       icon={<PencilAltIcon />}
       iconPosition="end"
