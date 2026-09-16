@@ -85,24 +85,25 @@ export default function ClusterUpdatesTab({ clusterVersion }: ClusterUpdatesTabP
   }
 
   return (
-    <div className="cluster-update-plugin__settings">
-      <div className="cluster-update-plugin__settings__row">
-        {/* Left column - Current version */}
-        <div className="cluster-update-plugin__settings__section cluster-update-plugin__settings__section--current">
-          <DescriptionList className="cluster-update-plugin__settings__details">
-            <DescriptionListGroup>
-              <DescriptionListTerm data-test="cv-current-version-header">
-                <CurrentVersionHeader cv={clusterVersion} />
-              </DescriptionListTerm>
-              <DescriptionListDescription data-test="cv-current-version">
-                <CurrentVersion cv={clusterVersion} />
-              </DescriptionListDescription>
-            </DescriptionListGroup>
-          </DescriptionList>
-        </div>
+    <>
+      <div className="cluster-update-plugin__settings">
+        <div className="cluster-update-plugin__settings__row">
+          {/* Left column - Current version */}
+          <div className="cluster-update-plugin__settings__section cluster-update-plugin__settings__section--current">
+            <DescriptionList className="cluster-update-plugin__settings__details">
+              <DescriptionListGroup>
+                <DescriptionListTerm data-test="cv-current-version-header">
+                  <CurrentVersionHeader cv={clusterVersion} />
+                </DescriptionListTerm>
+                <DescriptionListDescription data-test="cv-current-version">
+                  <CurrentVersion cv={clusterVersion} />
+                </DescriptionListDescription>
+              </DescriptionListGroup>
+            </DescriptionList>
+          </div>
 
-        {/* Right column - Status, Channel, and Updates */}
-        <div className="cluster-update-plugin__settings__section">
+          {/* Right column - Status, Channel, and Updates */}
+          <div className="cluster-update-plugin__settings__section">
           <div className="cluster-update-plugin__settings__row">
             <DescriptionList className="cluster-update-plugin__settings__details cluster-update-plugin__settings__details--status">
               <DescriptionListGroup>
@@ -165,9 +166,10 @@ export default function ClusterUpdatesTab({ clusterVersion }: ClusterUpdatesTabP
             <UpdateInProgress clusterVersion={clusterVersion} machineConfigPools={mcps} />
           )}
         </div>
+        </div>
       </div>
 
-      {/* Additional cluster details */}
+      {/* Additional cluster details - outside bordered container */}
       <DescriptionList className="pf-v6-u-mt-lg pf-v6-u-ml-lg">
         {clusterID && (
           <DescriptionListGroup>
@@ -215,6 +217,6 @@ export default function ClusterUpdatesTab({ clusterVersion }: ClusterUpdatesTabP
         onClose={() => setIsMoreUpdatesModalOpen(false)}
         clusterVersion={clusterVersion}
       />
-    </div>
+    </>
   );
 }
