@@ -59,29 +59,26 @@ export default function ClusterUpdatePage() {
           <FlexItem>
             <Title headingLevel="h1">{pageTitle}</Title>
           </FlexItem>
-          <FlexItem>
-            <Label className="cluster-update-plugin__preview-badge">{t('Tech preview')}</Label>
-          </FlexItem>
+          {agenticRunsAvailable && (
+            <FlexItem>
+              <Label className="cluster-update-plugin__preview-badge">{t('Tech preview')}</Label>
+            </FlexItem>
+          )}
         </Flex>
         <Content component="p" className="cluster-update-plugin__description">
-          {t(
-            'Review available versions, assess operator compatibility, and plan your update to newer OpenShift releases. Use Updates plan to prepare or start an update and Active update plans for in-flight work.',
-          )}
+          {agenticRunsAvailable
+            ? t(
+                'Review available versions, assess operator compatibility, and plan your update to newer OpenShift releases. Use Updates plan to prepare or start an update and Active update plans for in-flight work.',
+              )
+            : t(
+                'Review available versions and manage cluster updates to newer OpenShift releases.',
+              )}
         </Content>
       </PageSection>
       {cvError && (
         <PageSection hasBodyWrapper={false}>
           <Alert variant="danger" isInline title={t('Error loading cluster version')}>
             {String(cvError)}
-          </Alert>
-        </PageSection>
-      )}
-      {agenticRunsError && (
-        <PageSection hasBodyWrapper={false}>
-          <Alert variant="warning" isInline title={t('Lightspeed agentic runs unavailable')}>
-            {t(
-              'The Lightspeed AgenticRun CRD is not installed on this cluster. AI-driven update planning features are disabled.',
-            )}
           </Alert>
         </PageSection>
       )}
@@ -103,24 +100,31 @@ export default function ClusterUpdatePage() {
                 </TabContentBody>
               </TabContent>
             </Tab>
-            <Tab eventKey={1} title={<TabTitleText>{t('Updates plan')}</TabTitleText>}>
-              <TabContent id="updates-plan-tab">
-                <TabContentBody>
-                  <UpdatePlanTab
-                    clusterVersion={clusterVersion as ClusterVersion}
-                    agenticRuns={agenticRuns}
-                  />
-                </TabContentBody>
-              </TabContent>
-            </Tab>
-            <Tab eventKey={2} title={<TabTitleText>{t('Active update plans')}</TabTitleText>}>
-              <TabContent id="active-plans-tab">
-                <TabContentBody>
-                  <ActivePlansTab activePlans={activePlans} />
-                </TabContentBody>
-              </TabContent>
-            </Tab>
-            <Tab eventKey={3} title={<TabTitleText>{t('Update history')}</TabTitleText>}>
+            {agenticRunsAvailable && (
+              <>
+                <Tab eventKey={1} title={<TabTitleText>{t('Updates plan')}</TabTitleText>}>
+                  <TabContent id="updates-plan-tab">
+                    <TabContentBody>
+                      <UpdatePlanTab
+                        clusterVersion={clusterVersion as ClusterVersion}
+                        agenticRuns={agenticRuns}
+                      />
+                    </TabContentBody>
+                  </TabContent>
+                </Tab>
+                <Tab eventKey={2} title={<TabTitleText>{t('Active update plans')}</TabTitleText>}>
+                  <TabContent id="active-plans-tab">
+                    <TabContentBody>
+                      <ActivePlansTab activePlans={activePlans} />
+                    </TabContentBody>
+                  </TabContent>
+                </Tab>
+              </>
+            )}
+            <Tab
+              eventKey={agenticRunsAvailable ? 3 : 1}
+              title={<TabTitleText>{t('Update history')}</TabTitleText>}
+            >
               <TabContent id="update-history-tab">
                 <TabContentBody>
                   <UpdateHistoryTab clusterVersion={clusterVersion as ClusterVersion} />
