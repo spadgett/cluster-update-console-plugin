@@ -38,6 +38,12 @@ export type K8sResourceCommon = {
   };
 };
 
+export enum K8sResourceConditionStatus {
+  True = 'True',
+  False = 'False',
+  Unknown = 'Unknown',
+}
+
 export type K8sResourceCondition = {
   type: string;
   status: string;
