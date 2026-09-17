@@ -8,7 +8,8 @@ import {
   SyncAltIcon,
   ArrowCircleUpIcon,
 } from '@patternfly/react-icons';
-import { ClusterVersion, ClusterVersionConditionType } from '../../models/clusterversion';
+import { Link } from 'react-router';
+import { ClusterVersion, ClusterVersionConditionType, ClusterVersionModel } from '../../models/clusterversion';
 import { I18N_NAMESPACE } from '../../utils/constants';
 import {
   getClusterUpdateStatus,
@@ -17,6 +18,17 @@ import {
   getDesiredClusterVersion,
 } from '../../utils/cluster-updates';
 import { K8sResourceConditionStatus } from '@openshift-console/dynamic-plugin-sdk';
+
+const getClusterVersionResourcePath = (name: string): string => {
+  const { apiGroup, apiVersion, kind } = ClusterVersionModel;
+  return `/k8s/cluster/${apiGroup}~${apiVersion}~${kind}/${name}`;
+};
+
+const ClusterVersionConditionsLink: React.FC<{ cv: ClusterVersion }> = ({ cv }) => {
+  const { t } = useTranslation(I18N_NAMESPACE);
+  const path = `${getClusterVersionResourcePath(cv.metadata?.name || 'version')}#conditions`;
+  return <Link to={path}>{t('View conditions')}</Link>;
+};
 
 type UpdateStatusProps = {
   cv: ClusterVersion;
@@ -87,6 +99,7 @@ const UpdatingMessage: React.FC<{ cv: ClusterVersion; isFailing?: boolean }> = (
       <UpdatingMessageText cv={cv} />
     </div>
     {isFailing && <FailingMessageText cv={cv} />}
+    <ClusterVersionConditionsLink cv={cv} />
   </>
 );
 
@@ -108,16 +121,24 @@ const ErrorRetrievingMessage: React.FC<{ cv: ClusterVersion }> = ({ cv }) => {
       {retrievedUpdatesCondition.message}
     </div>
   ) : (
-    <div data-test="cv-update-status-no-updates">
-      <StatusMessagePopover bodyContent={retrievedUpdatesCondition.message}>
-        <ExclamationCircleIcon color="var(--pf-t--global--icon--color--status--danger--default)" />{' '}
-        {t('Not retrieving updates')}
-      </StatusMessagePopover>
-    </div>
+    <>
+      <div data-test="cv-update-status-no-updates">
+        <StatusMessagePopover bodyContent={retrievedUpdatesCondition.message}>
+          <ExclamationCircleIcon color="var(--pf-t--global--icon--color--status--danger--default)" />{' '}
+          {t('Not retrieving updates')}
+        </StatusMessagePopover>
+      </div>
+      <ClusterVersionConditionsLink cv={cv} />
+    </>
   );
 };
 
-const FailingMessage: React.FC<{ cv: ClusterVersion }> = ({ cv }) => <FailingMessageText cv={cv} />;
+const FailingMessage: React.FC<{ cv: ClusterVersion }> = ({ cv }) => (
+  <>
+    <FailingMessageText cv={cv} />
+    <ClusterVersionConditionsLink cv={cv} />
+  </>
+);
 
 const InvalidMessage: React.FC<{ cv: ClusterVersion }> = () => {
   const { t } = useTranslation(I18N_NAMESPACE);
@@ -142,12 +163,15 @@ const ReleaseNotAcceptedMessage: React.FC<{ cv: ClusterVersion }> = ({ cv }) => 
   }
 
   return (
-    <div data-test="cv-update-status-release-accepted-false">
-      <StatusMessagePopover bodyContent={releaseNotAcceptedCondition.message}>
-        <ExclamationCircleIcon color="var(--pf-t--global--icon--color--status--danger--default)" />{' '}
-        {t('Release not accepted')}
-      </StatusMessagePopover>
-    </div>
+    <>
+      <div data-test="cv-update-status-release-accepted-false">
+        <StatusMessagePopover bodyContent={releaseNotAcceptedCondition.message}>
+          <ExclamationCircleIcon color="var(--pf-t--global--icon--color--status--danger--default)" />{' '}
+          {t('Release not accepted')}
+        </StatusMessagePopover>
+      </div>
+      <ClusterVersionConditionsLink cv={cv} />
+    </>
   );
 };
 
