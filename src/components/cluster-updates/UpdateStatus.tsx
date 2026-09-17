@@ -1,6 +1,6 @@
 import * as React from 'react';
 import { useTranslation } from 'react-i18next';
-import { Button, Popover } from '@patternfly/react-core';
+import { Alert, Button, Popover } from '@patternfly/react-core';
 import {
   CheckCircleIcon,
   ExclamationCircleIcon,
@@ -9,6 +9,7 @@ import {
   ArrowCircleUpIcon,
 } from '@patternfly/react-icons';
 import { Link } from 'react-router';
+import { k8sPatch, K8sResourceConditionStatus } from '@openshift-console/dynamic-plugin-sdk';
 import { ClusterVersion, ClusterVersionConditionType, ClusterVersionModel } from '../../models/clusterversion';
 import { I18N_NAMESPACE } from '../../utils/constants';
 import {
@@ -17,7 +18,7 @@ import {
   getClusterVersionCondition,
   getDesiredClusterVersion,
 } from '../../utils/cluster-updates';
-import { K8sResourceConditionStatus } from '@openshift-console/dynamic-plugin-sdk';
+import { getErrorMessage } from '../../utils/error';
 
 const getClusterVersionResourcePath = (name: string): string => {
   const { apiGroup, apiVersion, kind } = ClusterVersionModel;
@@ -140,12 +141,47 @@ const FailingMessage: React.FC<{ cv: ClusterVersion }> = ({ cv }) => (
   </>
 );
 
-const InvalidMessage: React.FC<{ cv: ClusterVersion }> = () => {
+const InvalidMessage: React.FC<{ cv: ClusterVersion }> = ({ cv }) => {
   const { t } = useTranslation(I18N_NAMESPACE);
+  const [inProgress, setInProgress] = React.useState(false);
+  const [error, setError] = React.useState('');
+
+  const cancelUpdate = async () => {
+    setError('');
+    setInProgress(true);
+    try {
+      await k8sPatch({
+        model: ClusterVersionModel,
+        resource: cv,
+        data: [{ path: '/spec/desiredUpdate', op: 'remove' }],
+      });
+    } catch (err) {
+      setError(getErrorMessage(err));
+    } finally {
+      setInProgress(false);
+    }
+  };
+
   return (
     <div data-test="cv-update-status-invalid">
-      <ExclamationCircleIcon color="var(--pf-t--global--icon--color--status--danger--default)" />{' '}
-      {t('Invalid cluster version')}
+      <div>
+        <ExclamationCircleIcon color="var(--pf-t--global--icon--color--status--danger--default)" />{' '}
+        {t('Invalid cluster version')}
+      </div>
+      <Button
+        onClick={cancelUpdate}
+        variant="primary"
+        className="pf-v6-u-mt-xs"
+        isLoading={inProgress}
+        isDisabled={inProgress}
+      >
+        {t('Cancel update')}
+      </Button>
+      {error && (
+        <Alert variant="danger" isInline title={t('Error canceling update')} className="pf-v6-u-mt-sm">
+          {error}
+        </Alert>
+      )}
     </div>
   );
 };
